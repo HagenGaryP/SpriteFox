@@ -1,0 +1,40 @@
+{
+  "name": "spritefox",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "seed": "node script/seed.js",
+    "start": "node main.js",
+    "start-dev": "webpack -w & nodemon main.js",
+    "deploy": "script/deploy"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-decorators": "^7.8.3",
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "pg": "^8.0.3",
+    "pg-hstore": "^2.3.3",
+    "react": "^16.13.1",
+    "react-color": "^2.18.1",
+    "react-dom": "^16.13.1",
+    "react-input-slider": "^5.1.7",
+    "react-router-dom": "^5.1.2",
+    "sequelize": "^5.21.7",
+    "socket.io": "^2.3.0",
+    "uikit": "^3.4.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/preset-react": "^7.9.4",
+    "babel-loader": "^8.1.0",
+    "eslint-plugin-react-hooks": "^4.0.1",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
+  }
+}
