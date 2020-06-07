@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SketchPicker } from 'react-color';
 
 const ColorPicker = (props) => {
-  const initialState = '#000000';
-  const [currentColor, setColor] = useState(initialState);
+  const [currentColor, setColor] = useState('#000000');
   const [editMode, setMode] = useState(true);
 
   function handleChangeComplete(color) {
@@ -11,7 +10,8 @@ const ColorPicker = (props) => {
   }
 
   useEffect(() => {
-    props.currentColor(currentColor);
+    // console.log('>>>> currentColor >>>>', currentColor)
+    setColor(currentColor);
   }, [currentColor]);
 
   return (
