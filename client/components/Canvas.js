@@ -6,15 +6,16 @@ import SavedCanvas from './SavedCanvas';
 import { SketchPicker } from 'react-color';
 
 let initialFrames = [];
+let canvas, ctx;
 
 const Canvas = (props) => {
   const [pixelSize, setPixelSize] = useState(24);
   const [pixelSelect, setPixelSelect] = useState(3);
   const [factor, setFactor] = useState(3);
-  const [framesArray, setFramesArray] = useState(initialFrames);
+  const [framesArray, setFramesArray] = useState([]);
   const [mappedGrid, setMappedGrid] = useState({});
-  const [frameCounter, setFrameCounter] = useState(1);
-  const [currentFrame, setCurrentFrame] = useState('');
+  const [frameCounter, setFrameCounter] = useState(initialFrames.length+1);
+  const [currentFrame, setCurrentFrame] = useState('1');
   const [fps, setFps] = useState(5);
   const [color, setColor] = useState('#000000');
   const [tool, setTool] = useState(true);
@@ -22,93 +23,46 @@ const Canvas = (props) => {
 
   const canvasRef = useRef();
 
-  // console.log('>>> props >>>', props)
-
-
   // const [canvas, setCanvas] = useState(canvasRef.current);
   // const [ctx, setCtx] = useState(canvas.getContext('2d'));
-  let canvas, ctx;
-  // const mappedGrid = {};
+
+
   // // componentDidMount() code here
   useEffect(() => {
     canvas = canvasRef.current;
     getFrames();
     ctx = canvas.getContext('2d');
-
-    // for (let key in localStorage) {
-    //   if (key !== 'currentColor' && typeof localStorage[key] === 'string' && !initialFrames.includes(key)) {
-    //     initialFrames.push(key);
-
-    //     // setFramesArray([...framesArray, key])
-    //   }
-    // }
     console.log('initial render, initialFrames >>>', initialFrames)
-
-    // console.log('mounting, mappedGrid >>>', mappedGrid)
     createGrid();
-    console.log('>>> framesArray >>> ', framesArray)
+
+    const storage = initialFrames.map(elem => {
+      return localStorage.getItem(elem)
+    })
+
+    localStorage.clear()
+    storage.forEach((item, idx) => {
+      localStorage.setItem(`${idx+1}`, item)
+    })
+
     // socket.on('fill', (x, y, color, pixelSize, factor) => {
     //   fillPixel(x, y, color, pixelSize, factor);
     // });
-    // addFrame();
-    // setState({currentFrame: '1'});
-  }, [framesArray]);
+
+    setFrameCounter(initialFrames.length)
+    if (initialFrames.length === 0) {
+      addBlankFrame();
+    }
+
+    setFramesArray(initialFrames)
+    setCurrentFrame(`${frameCounter}`);
+    getCanvas(currentFrame)
+  }, []);
 
   useEffect(() => {
     canvas = canvasRef.current;
-    // getFrames();
     ctx = canvas.getContext('2d');
-    console.log('>>> framesArray >>> ', mappedGrid)
-    console.log('>>>> color >>>>', color)
-    setColor(color);
-    // setMappedGrid({...mappedGrid});
-  }, [color, mappedGrid]);
 
-  // useEffect(() => {
-  //   canvas = canvasRef.current;
-  //   // getFrames();
-  //   ctx = canvas.getContext('2d');
-  //   console.log('>>> framesArray >>> ', framesArray)
-  //   // createGrid();
-  //   // socket.on('fill', (x, y, color, pixelSize, factor) => {
-  //   //   fillPixel(x, y, color, pixelSize, factor);
-  //   // });
-  //   // addFrame();
-  //   // console.log('on updates, mappedGrid >>>', mappedGrid)
-
-  // }, []);
-
-
-  // // set up canvas width and height after first mount
-  // useEffect(() => {
-  //   const canvas = canvasRef.current;
-  //   const ctx = canvas.getContext('2d');
-  //   console.log('>>>> canvas >>> ', ctx)
-
-  //   // canvas.width = canvasWidth;
-  //   // canvas.height = canvasHeight;
-  //   // canvas.style.width = canvasWidth;
-  //   // canvas.style.height = canvasHeight;
-  // }, []);
-
-  // // on every render...... from pixalive
-  // useEffect(() => {
-  //   // composite layers and get ready to compare
-  //   const pixels = compositeLayers(layers);
-  //   const prevPixels = pixelsRef.current;
-  //   pixelsRef.current = pixels;
-
-  //   // check for changes and render if changes
-  //   if (pixelsChanged(prevPixels, pixels) || alwaysUpdate) {
-  //     // uncomment to check when frames re-render
-  //     // !alwaysUpdate && console.log(`rerendering ${identifier}`);
-  //     const canvas = canvasRef.current;
-  //     const ctx = canvas.getContext('2d');
-  //     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-  //     renderBackdrop(ctx);
-  //     renderSmallCanvas(ctx, pixels, canvasWidth, canvasHeight);
-  //   }
-  // });
+  }, [color, mappedGrid, currentFrame, frameCounter, framesArray, pixelSize, factor]);
 
   function handleChangeComplete(color) {
     setColor(color.hex);
@@ -132,21 +86,17 @@ const Canvas = (props) => {
       mappedGrid[i] = array;
       y += pixelSize;
     }
-
-    // console.log('>>> ctx >>>', ctx)
-    // console.log('>>>inside CreateGrid() >>> mappedGrid >>> ', mappedGrid)
-    // setFramesArray([mappedGrid])
-    // console.log('>>> framesArray >>> ', framesArray)
   }
 
   // --------- HANDLE CHANGE --------- //
-  function handleChange(event) {
-    event.preventDefault();
-    setState({
-      [event.target.name]: event.target.value,
-      currentFrame: event.target.value,
-    });
-  }
+
+  // function handleChange(event) {
+  //   event.preventDefault();
+  //   setState({
+  //     [event.target.name]: event.target.value,
+  //     currentFrame: event.target.value,
+  //   });
+  // }
 
   // --------- TOGGLE TOOL--------- //
   function toggleTool() {
@@ -165,7 +115,6 @@ const Canvas = (props) => {
 
   function renderSaved(savedGrid) {
     let pixelSize = 8;
-    console.log('renderSaved, savedGrid >>> ', savedGrid)
     ctx.clearRect(0, 0, 16 * 24, 16 * 24);
     for (let key in savedGrid) {
       // key = id = index of row array
@@ -192,10 +141,10 @@ const Canvas = (props) => {
         && !initialFrames.includes(key)
       ) {
         initialFrames.push(key);
-
-        setFramesArray([...framesArray, key])
       }
     }
+    initialFrames = initialFrames.sort((a, b) => a - b)
+    setFramesArray(framesArray.concat(initialFrames))
   }
 
   // --------- ANIMATE FRAMES --------- //
@@ -217,55 +166,87 @@ const Canvas = (props) => {
       (frame) => frame !== canvasName
     );
     localStorage.removeItem(canvasName);
+    let idx = framesArray.indexOf(canvasName);
     setFramesArray(filteredArray);
+
+    setCurrentFrame(`${framesArray.length}`)
+    setFrameCounter(frameCounter-1)
+
+    const storage = filteredArray.map(elem => {
+      return localStorage.getItem(elem)
+    })
+    console.log('storage >>> ', storage)
+    localStorage.clear()
+    storage.forEach((item, idx) => {
+      localStorage.setItem(`${idx+1}`, item)
+    })
+
+    setTimeout(() => {
+      if (filteredArray.includes(`${idx}`)) getCanvas(`${idx}`);
+      else getCanvas(filteredArray[0])
+    }, 50);
   }
 
 
   // --------- CREATE A NEW FRAME --------- //
   function addBlankFrame() {
-    console.log('addBlankFrame >>> mappedGrid >>> ', mappedGrid)
     ctx.clearRect(0, 0, 16 * 24, 16 * 24);
     createGrid();
-
-    if (framesArray) {
+    if (
+      framesArray.includes(`${frameCounter}`) ||
+      initialFrames.includes(`${frameCounter}`)
+    ) {
       localStorage.setItem(
-        `${frameCounter}`,
+        `${initialFrames.length+1}`,
         JSON.stringify(mappedGrid)
       );
+      setFrameCounter(frameCounter+1);
+      setCurrentFrame(`${framesArray.length+1}`)
     }
+    else {
+      localStorage.setItem(
+        `${frameCounter+1}`,
+        JSON.stringify(mappedGrid)
+      );
+      setFrameCounter(frameCounter+1);
+      setCurrentFrame(`${framesArray.length+1}`)
+    }
+    setFramesArray([...framesArray, `${frameCounter+1}`]);
+    setCurrentFrame(`${frameCounter}`)
 
-    setFrameCounter(frameCounter+1);
-    setFramesArray([...framesArray, `${frameCounter}`]);
-    setCurrentFrame(frameCounter);
+    setTimeout(() => getCanvas(`${frameCounter+1}`), 50);
 
   }
 
   // --------- DUPLICATE CURRENT FRAME --------- //
   // saves canvas, adds it to array of canvases
   function addFrame() {
-    console.log('addFrame >>> mappedGrid >>> ', mappedGrid)
-    if (framesArray) {  // might be framesArray.length > 0
+    if (!framesArray.includes(`${frameCounter}`)) {
       localStorage.setItem(
         `${frameCounter}`,
         JSON.stringify(mappedGrid)
       );
+      setFrameCounter(frameCounter+1);
+      setFramesArray([...framesArray, `${frameCounter}`]);
+    } else if (framesArray.includes(`${frameCounter}`)) {
+      localStorage.setItem(
+        `${frameCounter+1}`,
+        JSON.stringify(mappedGrid)
+      );
+      setFrameCounter(frameCounter+1);
+      setFramesArray([...framesArray, `${frameCounter+1}`]);
     }
-
-    setFrameCounter(frameCounter+1);
 
     ctx.clearRect(0, 0, 16 * 24, 16 * 24);
     createGrid();
 
-    setFramesArray([...framesArray, `${frameCounter}`]);
-    setCurrentFrame(frameCounter);
-
-    setTimeout(() => getCanvas(currentFrame), 500);
+    setCurrentFrame(`${frameCounter}`)
+    setTimeout(() => getCanvas(`${framesArray.length+1}`), 50);
   }
 
   // --------- NEW SESSION--------- //
   function newSession() {
     // Clears Storage, clears display of frames underneath grid, resets canvas
-    console.log('NEWSESSION() >>> mappedGrid >>> ', mappedGrid)
     resetCanvas();
     localStorage.clear();
 
@@ -282,21 +263,17 @@ const Canvas = (props) => {
 
       setFramesArray([]);
       setCurrentFrame('1');
-      setFrameCounter(frameCounter+1);
+      setFrameCounter(1);
 
     }, 1000);
   }
 
   // --------- GET CANVAS--------- //
   function getCanvas(frameNumber) {
-    // console.log('getCanvas BEFORE >>> mappedGrid >>> ', mappedGrid)
     ctx.clearRect(0, 0, 16 * 24, 16 * 24);
     let item = JSON.parse(localStorage.getItem(frameNumber));
     renderSaved(item); // item is obj of arrays
-
-    // console.log('getCanvas() >>> item >>> ', item)
-    console.log('getCanvas >>> framenumber >>> ', frameNumber)
-    setCurrentFrame(frameNumber);
+    setCurrentFrame(`${frameNumber}`);
     setMappedGrid(item);
   }
 
@@ -355,8 +332,6 @@ const Canvas = (props) => {
     // pixelSize = pixelSize,
     // factor = factor
   ) {
-    console.log('fillpixel, color >>>', color)
-    console.log('fillpixel, mappedGrid >>>', mappedGrid)
     //need to add a color value to the parameters
     const canvasRect = canvas.getBoundingClientRect();
 
@@ -433,7 +408,6 @@ const Canvas = (props) => {
       factor = 1;
     }
     // socket.emit('setPixelSize', pixels, factor);
-
     setPixelSize(pixels);
     setFactor(factor);
     setPixelSelect(factor);
@@ -531,7 +505,9 @@ const Canvas = (props) => {
 
           <div className='frames-container'>
               <ul>
-                {framesArray.map((frame, index) => {
+                {
+                  Array.isArray(framesArray) &&
+                  framesArray.map((frame, index) => {
                   return (
                     <li key={index} className='frame-item'>
                       <button
