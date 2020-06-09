@@ -26,7 +26,7 @@ If you want to run the server and/or `webpack` separately, you can also
 
 
 
-IN THE PROCESS OF CONVERTING THE CLASS COMPONENT TO HOOKS:
+# IN THE PROCESS OF CONVERTING THE CLASS COMPONENT TO HOOKS:
 
 The original Class Component, Canvas.js, was entirely too large and unmanageable. 
 So, I've been attempting to refactor the entire app using React Hooks to get a better understanding 
@@ -36,7 +36,7 @@ So far, while converting to hooks, I was able to keep most of the functionality 
 with a few errors along the way.
 
 
-Errors:
+## Errors:
 
 1) adding more than one frame loses access to the 'canvas' element, which make me think that it's losing its reference. 
 If that's not the case, then my next assumption would be that the way I declared canvas is causing this issue. 
@@ -60,7 +60,7 @@ the specific hook - it will listen for the state change and expect a different v
 passed as a 2nd argument.
 
 
-TODO:
+## TODO:
 
 Implement DB - Considering firebase, so it can handle sockets too.
 
