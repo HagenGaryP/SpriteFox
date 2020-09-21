@@ -2,6 +2,7 @@ import React from 'react';
 import socket from '../socket.js';
 import Slider from 'react-input-slider';
 import ColorPicker from './ColorPicker';
+import Instructions from './Instructions';
 
 class Canvas extends React.Component {
   constructor(props) {
@@ -393,43 +394,10 @@ class Canvas extends React.Component {
 
     return (
       <div>
-        <nav className='nav container'>
-          <button
-            onClick={this.toggleInstructions}
-            className='btn instruct-btn'
-          >
-            Instructions
-          </button>
-          <div
-            className={`${
-              showInstructions ? 'instructions show' : 'instructions'
-            }`}
-          >
-            <h3>Welcome!</h3>
-            <p>
-              - If you'd like to have a friend draw with you, simply send them
-              the url and they'll join your room automatically.
-            </p>
-            <p>- Click or hold down your mouse to draw.</p>
-            <p>
-              - Frames will autosave, so don't worry about losing your work!
-            </p>
-            <p>
-              - The 'Duplicate Frame' button will make a new frame with the same
-              art that is on the current one.
-            </p>
-            <p>
-              - If you'd like a brand new canvas, press the '+' button on the
-              Frames List below the canvas.
-            </p>
-            <button
-              onClick={this.toggleInstructions}
-              className='btn close-instruct-btn'
-            >
-              Close
-            </button>
-          </div>
-        </nav>
+        <Instructions
+          toggleInstructions={this.toggleInstructions}
+          showInstructions={showInstructions}
+        />
         <div className='main-container container'>
           <div className='toolbox-container'>
             <ColorPicker currentColor={this.setColor} />
