@@ -246,7 +246,7 @@ const Canvas = (props) => {
 
   // --------- NEW SESSION--------- //
   function newSession() {
-    // Clears Storage, clears display of frames underneath grid, resets canvas
+
     resetCanvas();
     localStorage.clear();
 
