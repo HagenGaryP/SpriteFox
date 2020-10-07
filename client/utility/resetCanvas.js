@@ -1,3 +1,5 @@
+// errors with ctx
+
 // import { createGrid } from './createGrid';
 
 // export function resetCanvas(
