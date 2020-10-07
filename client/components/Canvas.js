@@ -3,18 +3,19 @@ import socket from '../socket.js';
 import Slider from 'react-input-slider';
 import ColorPicker from './ColorPicker';
 import Instructions from './Instructions';
+import { createGrid } from '../utility/createGrid';
+import { renderSaved } from '../utility/renderSaved';
+import { animate } from '../utility/animate';
 
 class Canvas extends React.Component {
   constructor(props) {
     super(props);
     this.canvas = React.createRef();
-    this.addFrame = this.addFrame.bind(this);
     this.getCanvas = this.getCanvas.bind(this);
+    this.addFrame = this.addFrame.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.fillPixel = this.fillPixel.bind(this);
     this.getFrames = this.getFrames.bind(this);
-    this.animate = this.animate.bind(this);
-    this.renderSaved = this.renderSaved.bind(this);
     this.resetCanvas = this.resetCanvas.bind(this);
     this.newSession = this.newSession.bind(this);
     this.setPixelSize = this.setPixelSize.bind(this);
@@ -40,7 +41,7 @@ class Canvas extends React.Component {
   componentDidMount() {
     this.getFrames();
     this.ctx = this.canvas.current.getContext('2d');
-    this.createGrid();
+    createGrid(this.ctx, this.state.pixelSize, this.state.mappedGrid);
     socket.on('fill', (x, y, color, pixelSize, factor) => {
       this.fillPixel(x, y, color, pixelSize, factor);
     });
@@ -81,49 +82,6 @@ class Canvas extends React.Component {
     }));
   };
 
-  // --------- CREATE GRID --------- //
-  createGrid() {
-    let y = 0;
-    let rows = 48;
-    for (let i = 0; i < rows; i++) {
-      let x = 0;
-      let array = [];
-      for (let j = 0; j < rows; j++) {
-        array.push(null);
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-        this.ctx.fillRect(x, y, this.state.pixelSize, this.state.pixelSize);
-        x += this.state.pixelSize;
-      }
-
-      // Add each array to the mappedGrid
-      this.state.mappedGrid[i] = array;
-      y += this.state.pixelSize;
-    }
-  }
-
-  // --------- RENDER SAVED GRID --------- //
-
-  renderSaved(savedGrid) {
-    let pixelSize = 8;
-
-    this.ctx.clearRect(0, 0, 16 * 24, 16 * 24);
-    for (let key in savedGrid) {
-      // key = id = index of row array
-      let pixelRow = savedGrid[key];
-      for (let i = 0; i < pixelRow.length; i++) {
-        if (pixelRow[i] !== null) {
-          // These are the actual coordinates to render on the grid
-          let coordinateX = i * pixelSize;
-          let coordinateY = key * pixelSize;
-
-          // Render each original pixel from the saved grid
-          this.ctx.fillStyle = pixelRow[i];
-          this.ctx.fillRect(coordinateX, coordinateY, pixelSize, pixelSize);
-        }
-      }
-    }
-  }
-
   // --------- GET FRAMES--------- //
   getFrames() {
     for (let key in localStorage) {
@@ -132,19 +90,6 @@ class Canvas extends React.Component {
           framesArray: [...this.state.framesArray, key],
         });
       }
-    }
-  }
-
-  // --------- ANIMATE FRAMES --------- //
-  animate() {
-    let len = this.state.framesArray.length;
-    let interval = 0;
-    for (let i = 0; i < len; i++) {
-      setTimeout(() => {
-        this.getCanvas(this.state.framesArray[i]);
-      }, interval);
-
-      interval = interval + 1000 / this.state.fps;
     }
   }
 
@@ -163,7 +108,7 @@ class Canvas extends React.Component {
   // --------- CREATE A NEW FRAME --------- //
   addBlankFrame() {
     this.ctx.clearRect(0, 0, 16 * 24, 16 * 24);
-    this.createGrid();
+    createGrid(this.ctx, this.state.pixelSize, this.state.mappedGrid);
 
     if (this.state.framesArray) {
       localStorage.setItem(
@@ -195,7 +140,7 @@ class Canvas extends React.Component {
     });
 
     this.ctx.clearRect(0, 0, 16 * 24, 16 * 24);
-    this.createGrid();
+    createGrid(this.ctx, this.state.pixelSize, this.state.mappedGrid);
     this.setState({
       framesArray: [...this.state.framesArray, this.state.frameCounter],
       currentFrame: this.state.frameCounter,
@@ -232,7 +177,7 @@ class Canvas extends React.Component {
   getCanvas(frameNumber) {
     this.ctx.clearRect(0, 0, 16 * 24, 16 * 24);
     let item = JSON.parse(localStorage.getItem(frameNumber));
-    this.renderSaved(item); // item is obj of arrays
+    renderSaved(item, this.ctx); // item is obj of arrays
     this.setState({
       currentFrame: frameNumber,
       mappedGrid: item,
@@ -242,7 +187,7 @@ class Canvas extends React.Component {
   // --------- RESET CANVAS --------- //
   resetCanvas() {
     this.ctx.clearRect(0, 0, 16 * 24, 16 * 24);
-    this.createGrid();
+    createGrid(this.ctx, this.state.pixelSize, this.state.mappedGrid);
     localStorage.setItem(
       `${this.state.currentFrame}`,
       JSON.stringify(this.state.mappedGrid)
@@ -486,7 +431,7 @@ class Canvas extends React.Component {
               Duplicate Frame
             </button>
 
-            <button onClick={() => this.animate()} className='btn animate-btn'>
+            <button onClick={() => animate(this.state.framesArray, this.getCanvas, this.state.fps)} className='btn animate-btn'>
               Animate!
             </button>
 
