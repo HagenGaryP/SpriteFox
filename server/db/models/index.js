@@ -1,3 +1,4 @@
+const User = require('./user')
 const Room = require('./room')
 const Frame = require('./frame')
 
@@ -21,4 +22,5 @@ Room.hasMany(Frame)
 module.exports = {
   Frame,
   Room,
+  User,
 }
