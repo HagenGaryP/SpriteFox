@@ -2,6 +2,7 @@ import React, {useEffect, useState, useRef} from 'react';
 import socket from '../socket.js';
 import Slider from 'react-input-slider';
 import ColorPicker from './ColorPicker';
+
 import SavedCanvas from './SavedCanvas';
 import { SketchPicker } from 'react-color';
 
@@ -61,13 +62,11 @@ const Canvas = (props) => {
   useEffect(() => {
     canvas = canvasRef.current;
     ctx = canvas.getContext('2d');
-
   }, [color, mappedGrid, currentFrame, frameCounter, framesArray, pixelSize, factor]);
 
   function handleChangeComplete(color) {
     setColor(color.hex);
   }
-
 
   // --------- CREATE GRID --------- //
   function createGrid() {
