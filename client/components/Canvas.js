@@ -9,9 +9,9 @@ let initialFrames = [];
 let canvas, ctx;
 
 const Canvas = (props) => {
-  const [pixelSize, setPixelSize] = useState(24);
-  const [pixelSelect, setPixelSelect] = useState(3);
-  const [factor, setFactor] = useState(3);
+  const [pixelSize, setPixelSize] = useState(8);
+  const [pixelSelect, setPixelSelect] = useState(1);
+  const [factor, setFactor] = useState(1);
   const [framesArray, setFramesArray] = useState([]);
   const [mappedGrid, setMappedGrid] = useState({});
   const [frameCounter, setFrameCounter] = useState(initialFrames.length+1);
@@ -50,18 +50,20 @@ const Canvas = (props) => {
 
     setFrameCounter(initialFrames.length)
     if (initialFrames.length === 0) {
+      console.log('initialFrames.length === 0');
       addBlankFrame();
     }
 
     setFramesArray(initialFrames)
     setCurrentFrame(`${frameCounter}`);
     getCanvas(currentFrame)
+    console.log('frameCounter = ', frameCounter);
   }, []);
 
   useEffect(() => {
     canvas = canvasRef.current;
     ctx = canvas.getContext('2d');
-
+    console.log('frameCounter >>>>>>>> ', frameCounter);
   }, [color, mappedGrid, currentFrame, frameCounter, framesArray, pixelSize, factor]);
 
   function handleChangeComplete(color) {
@@ -182,18 +184,14 @@ const Canvas = (props) => {
   function addBlankFrame() {
     ctx.clearRect(0, 0, 16 * 24, 16 * 24);
     createGrid();
-    if (
-      framesArray.includes(`${frameCounter}`) ||
-      initialFrames.includes(`${frameCounter}`)
-    ) {
+    if (framesArray.includes(`${frameCounter}`)) {
       localStorage.setItem(
-        `${initialFrames.length+1}`,
+        `${frameCounter+1}`,
         JSON.stringify(mappedGrid)
       );
       setFrameCounter(frameCounter+1);
       setCurrentFrame(`${framesArray.length+1}`)
-    }
-    else {
+    } else {
       localStorage.setItem(
         `${frameCounter+1}`,
         JSON.stringify(mappedGrid)
@@ -205,7 +203,6 @@ const Canvas = (props) => {
     setCurrentFrame(`${frameCounter}`)
 
     setTimeout(() => getCanvas(`${frameCounter+1}`), 50);
-
   }
 
   // --------- DUPLICATE CURRENT FRAME --------- //
@@ -241,21 +238,10 @@ const Canvas = (props) => {
     localStorage.clear();
 
     setFrameCounter(1);
-    setFramesArray([]);
-
-    setTimeout(() => {
-      if (framesArray) {
-        localStorage.setItem(
-          `${frameCounter}`,
-          JSON.stringify(mappedGrid)
-        );
-      }
-
-      setFramesArray([]);
-      setCurrentFrame('1');
-      setFrameCounter(1);
-
-    }, 1000);
+    setFramesArray(['1']);
+    initialFrames = [];
+    localStorage.setItem(`1`, JSON.stringify(mappedGrid));
+    setCurrentFrame('1');
   }
 
   // --------- GET CANVAS--------- //
