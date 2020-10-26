@@ -1,9 +1,9 @@
 import React, {useEffect, useState, useRef} from 'react';
 import socket from '../socket.js';
 import Slider from 'react-input-slider';
-import ColorPicker from './ColorPicker';
-// import SavedCanvas from './SavedCanvas';
 import { SketchPicker } from 'react-color';
+import { createGrid } from '../utility/createGrid';
+
 
 let initialFrames = [];
 let canvas, ctx;
@@ -28,7 +28,7 @@ const Canvas = (props) => {
     getFrames();
     ctx = canvas.getContext('2d');
 
-    createGrid();
+    createGrid(ctx, pixelSize, mappedGrid);
 
     const storage = initialFrames.map(elem => {
       return localStorage.getItem(elem)
@@ -64,23 +64,23 @@ const Canvas = (props) => {
 
 
   // --------- CREATE GRID --------- //
-  function createGrid() {
-    let y = 0;
-    let rows = 48;
-    for (let i = 0; i < rows; i++) {
-      let x = 0;
-      let array = [];
-      for (let j = 0; j < rows; j++) {
-        array.push(null);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-        ctx.fillRect(x, y, pixelSize, pixelSize);
-        x += pixelSize;
-      }
-      // Add each array to the mappedGrid
-      mappedGrid[i] = array;
-      y += pixelSize;
-    }
-  }
+  // function createGrid() {
+  //   let y = 0;
+  //   let rows = 48;
+  //   for (let i = 0; i < rows; i++) {
+  //     let x = 0;
+  //     let array = [];
+  //     for (let j = 0; j < rows; j++) {
+  //       array.push(null);
+  //       ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+  //       ctx.fillRect(x, y, pixelSize, pixelSize);
+  //       x += pixelSize;
+  //     }
+  //     // Add each array to the mappedGrid
+  //     mappedGrid[i] = array;
+  //     y += pixelSize;
+  //   }
+  // }
 
   // --------- TOGGLE TOOL--------- //
   function toggleTool() {
@@ -174,7 +174,7 @@ const Canvas = (props) => {
   // --------- CREATE A NEW FRAME --------- //
   function addBlankFrame() {
     ctx.clearRect(0, 0, 16 * 24, 16 * 24);
-    createGrid();
+    createGrid(ctx, pixelSize, mappedGrid);
     if (framesArray.includes(`${frameCounter}`)) {
       localStorage.setItem(
         `${frameCounter+1}`,
@@ -216,7 +216,7 @@ const Canvas = (props) => {
     }
 
     ctx.clearRect(0, 0, 16 * 24, 16 * 24);
-    createGrid();
+    createGrid(ctx, pixelSize, mappedGrid);
 
     setCurrentFrame(`${frameCounter}`)
     setTimeout(() => getCanvas(`${framesArray.length+1}`), 50);
@@ -247,7 +247,7 @@ const Canvas = (props) => {
   // --------- RESET CANVAS --------- //
   function resetCanvas() {
     ctx.clearRect(0, 0, 16 * 24, 16 * 24);
-    createGrid();
+    createGrid(ctx, pixelSize, mappedGrid);
     localStorage.setItem(
       `${currentFrame}`,
       JSON.stringify(mappedGrid)
