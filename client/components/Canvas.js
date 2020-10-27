@@ -2,7 +2,7 @@ import React, {useEffect, useState, useRef} from 'react';
 import socket from '../socket.js';
 import Slider from 'react-input-slider';
 import { SketchPicker } from 'react-color';
-import { createGrid } from '../utility/createGrid';
+import { createGrid, animate } from '../utility';
 
 
 let initialFrames = [];
@@ -132,17 +132,17 @@ const Canvas = (props) => {
   }
 
   // --------- ANIMATE FRAMES --------- //
-  function animate() {
-    let len = framesArray.length;
-    let interval = 0;
-    for (let i = 0; i < len; i++) {
-      setTimeout(() => {
-        getCanvas(framesArray[i]);
-      }, interval);
+  // function animate() {
+  //   let len = framesArray.length;
+  //   let interval = 0;
+  //   for (let i = 0; i < len; i++) {
+  //     setTimeout(() => {
+  //       getCanvas(framesArray[i]);
+  //     }, interval);
 
-      interval = interval + 1000 / fps;
-    }
-  }
+  //     interval = interval + 1000 / fps;
+  //   }
+  // }
 
   // --------- DELETE FRAMES --------- //
   function deleteFrame(canvasName) {
@@ -506,7 +506,7 @@ const Canvas = (props) => {
             Duplicate Frame
           </button>
 
-          <button onClick={() => animate()} className='btn animate-btn'>
+          <button onClick={() => animate(framesArray, getCanvas, fps, currentFrame)} className='btn animate-btn'>
             Animate!
           </button>
 
