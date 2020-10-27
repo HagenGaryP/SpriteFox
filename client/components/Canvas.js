@@ -2,7 +2,11 @@ import React, {useEffect, useState, useRef} from 'react';
 import socket from '../socket.js';
 import Slider from 'react-input-slider';
 import { SketchPicker } from 'react-color';
-import { createGrid, animate } from '../utility';
+import {
+  animate,
+  createGrid,
+  renderSaved,
+} from '../utility';
 
 
 let initialFrames = [];
@@ -62,26 +66,6 @@ const Canvas = (props) => {
     setColor(color.hex);
   }
 
-
-  // --------- CREATE GRID --------- //
-  // function createGrid() {
-  //   let y = 0;
-  //   let rows = 48;
-  //   for (let i = 0; i < rows; i++) {
-  //     let x = 0;
-  //     let array = [];
-  //     for (let j = 0; j < rows; j++) {
-  //       array.push(null);
-  //       ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-  //       ctx.fillRect(x, y, pixelSize, pixelSize);
-  //       x += pixelSize;
-  //     }
-  //     // Add each array to the mappedGrid
-  //     mappedGrid[i] = array;
-  //     y += pixelSize;
-  //   }
-  // }
-
   // --------- TOGGLE TOOL--------- //
   function toggleTool() {
     // toggles between draw and erase
@@ -93,29 +77,6 @@ const Canvas = (props) => {
     // toggles between draw and erase
     setShowInstructions(!showInstructions);
   };
-
-
-  // --------- RENDER SAVED GRID --------- //
-
-  function renderSaved(savedGrid) {
-    let pixelSize = 8;
-    ctx.clearRect(0, 0, 16 * 24, 16 * 24);
-    for (let key in savedGrid) {
-      // key = id = index of row array
-      let pixelRow = savedGrid[key];
-      for (let i = 0; i < pixelRow.length; i++) {
-        if (pixelRow[i] !== null) {
-          // These are the actual coordinates to render on the grid
-          let coordinateX = i * pixelSize;
-          let coordinateY = key * pixelSize;
-
-          // Render each original pixel from the saved grid
-          ctx.fillStyle = pixelRow[i];
-          ctx.fillRect(coordinateX, coordinateY, pixelSize, pixelSize);
-        }
-      }
-    }
-  }
 
   // --------- GET FRAMES--------- //
   function getFrames() {
@@ -130,19 +91,6 @@ const Canvas = (props) => {
     initialFrames = initialFrames.sort((a, b) => a - b)
     setFramesArray(framesArray.concat(initialFrames))
   }
-
-  // --------- ANIMATE FRAMES --------- //
-  // function animate() {
-  //   let len = framesArray.length;
-  //   let interval = 0;
-  //   for (let i = 0; i < len; i++) {
-  //     setTimeout(() => {
-  //       getCanvas(framesArray[i]);
-  //     }, interval);
-
-  //     interval = interval + 1000 / fps;
-  //   }
-  // }
 
   // --------- DELETE FRAMES --------- //
   function deleteFrame(canvasName) {
@@ -239,7 +187,7 @@ const Canvas = (props) => {
   function getCanvas(frameNumber) {
     ctx.clearRect(0, 0, 16 * 24, 16 * 24);
     let item = JSON.parse(localStorage.getItem(frameNumber));
-    renderSaved(item); // item is obj of arrays
+    renderSaved(item, ctx); // item is obj of arrays
     setCurrentFrame(`${frameNumber}`);
     setMappedGrid(item);
   }
