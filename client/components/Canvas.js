@@ -10,6 +10,7 @@ import {
 
 
 let initialFrames = [];
+let initialColors = [];
 let canvas, ctx;
 
 const Canvas = (props) => {
@@ -24,6 +25,7 @@ const Canvas = (props) => {
   const [color, setColor] = useState('#000000');
   const [tool, setTool] = useState(true);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [colorsUsed, setColorsUsed] = useState([]);
 
   const canvasRef = useRef();
 
@@ -47,20 +49,23 @@ const Canvas = (props) => {
     //   fillPixel(x, y, color, pixelSize, factor);
     // });
 
-    setFrameCounter(initialFrames.length)
+    setFrameCounter(initialFrames.length);
+
     if (initialFrames.length === 0) {
       addBlankFrame();
     }
 
+    setColorsUsed(initialColors);
     setFramesArray(initialFrames)
     setCurrentFrame(`${frameCounter}`);
-    getCanvas(currentFrame)
+    getCanvas(currentFrame);
+    console.log('colorsUsed', colorsUsed);
   }, []);
 
   useEffect(() => {
     canvas = canvasRef.current;
     ctx = canvas.getContext('2d');
-  }, [color, mappedGrid, currentFrame, frameCounter, framesArray, pixelSize, factor]);
+  }, [color, mappedGrid, currentFrame, frameCounter, framesArray, pixelSize, factor, colorsUsed]);
 
   function handleChangeComplete(color) {
     setColor(color.hex);
@@ -90,6 +95,30 @@ const Canvas = (props) => {
     }
     initialFrames = initialFrames.sort((a, b) => a - b)
     setFramesArray(framesArray.concat(initialFrames))
+    if (initialFrames[0]) {
+      let frameObj = JSON.parse(localStorage.getItem(initialFrames[0]))
+      console.log('frame = ', frameObj)
+      for (let row in frameObj) {
+        // console.log('frameObj row =  ', Array.isArray(frameObj[row]));
+          for (let i = 0; i < 48; i++) {
+            let elem = frameObj[row][i];
+            if (!initialColors.includes(elem) && elem) {
+              console.log('color = ', elem);
+              initialColors.push(elem);
+            }
+          }
+          // initialColors = row.filter(c => (!colorsUsed.includes(c) && c))
+
+          // val = JSON.parse(val);
+          // for (let elem in val) {
+          //   initialColors = elem.filter(c => (!colorsUsed.includes(c) && c))
+          //   console.log('elem = ', elem);
+          // }
+        }
+    }
+    setColorsUsed(initialColors);
+
+    console.log('initialColors >>>> ', initialColors)
   }
 
   // --------- DELETE FRAMES --------- //
@@ -255,7 +284,7 @@ const Canvas = (props) => {
       defaultX ?? Math.floor((window.event.clientX - canvasRect.x) / pixelSize);
     let y =
       defaultY ?? Math.floor((window.event.clientY - canvasRect.y) / pixelSize);
-
+    setColorsUsed([...colorsUsed, color]);
     // MAP color to proper place on mappedGrid
     for (let i = 0; i < factor; i++) {
       for (let j = 0; j < factor; j++) {
@@ -287,7 +316,7 @@ const Canvas = (props) => {
 
   // --------- MOUSE DOWN FOR DRAG--------- //
   function handleMouseDown() {
-
+    setColorsUsed([...colorsUsed, color]);
     if (tool) {
       fillPixel();
     } else {
@@ -382,6 +411,31 @@ const Canvas = (props) => {
             >
               Erase
             </button>
+          </div>
+          <div>
+            COLORS USED
+            {
+              initialColors.length > 0 && !colorsUsed.length > 0 ?
+              initialColors.map((colorString, index) => {
+                <li key={index}>
+                  <button
+                    onClick={() => setColor(colorString)}
+                  >
+                    {colorString, index}
+                  </button>
+                </li>
+              }) :
+              Array.isArray(colorsUsed) &&
+              colorsUsed.map((colorString, index) => {
+                <li key={index}>
+                  <button
+                    onClick={() => setColor(colorString)}
+                  >
+                    {colorString}
+                  </button>
+                </li>
+              })
+            }
           </div>
         </div>
         <div className='canvas-container'>
